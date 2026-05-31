@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Notificações | Chat.ICON</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:"Segoe UI",sans-serif;
+}
+
+:root{
+    --bg:#f8fbff;
+    --card:#ffffff;
+    --text:#222;
+    --primary:#2196f3;
+    --border:#e5edf5;
+}
+
+.dark{
+    --bg:#0d1117;
+    --card:#161b22;
+    --text:#f5f5f5;
+    --border:#2d333b;
+}
+
+body{
+    background:var(--bg);
+    color:var(--text);
+    min-height:100vh;
+}
+
+header{
+    height:70px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 20px;
+    border-bottom:1px solid var(--border);
+}
+
+.logo strong{ color:var(--primary); }
+
+.theme{
+    width:40px;
+    height:40px;
+    border:none;
+    border-radius:50%;
+    cursor:pointer;
+    background:var(--card);
+    color:var(--text);
+}
+
+.container{
+    max-width:700px;
+    margin:auto;
+    padding:25px 20px;
+}
+
+.top{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:20px;
+}
+
+.badge{
+    background:var(--primary);
+    color:white;
+    padding:6px 12px;
+    border-radius:999px;
+    font-size:.85rem;
+}
+
+.notificacao{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:18px;
+    padding:18px;
+    margin-bottom:12px;
+}
+
+.clear{
+    margin-top:15px;
+    width:100%;
+    border:none;
+    padding:14px;
+    border-radius:14px;
+    cursor:pointer;
+    background:#ff3b30;
+    color:white;
+    font-weight:600;
+}
+
+.empty{
+    text-align:center;
+    margin-top:80px;
+    opacity:.7;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <div class="logo">Chat.<strong>ICON</strong></div>
+    <button class="theme" id="themeBtn">🌙</button>
+</header>
+
+<div class="container">
+
+    <div class="top">
+        <h1>🔔 Notificações</h1>
+        <div class="badge" id="contador">0</div>
+    </div>
+
+    <div id="listaNotificacoes"></div>
+
+    <button class="clear" id="limpar">Limpar notificações</button>
+
+</div>
+
+<script>
+
+/* ==========================
+   PROTEÇÃO
+========================== */
+
+const usuarioLogado = JSON.parse(localStorage.getItem("usuarioLogado"));
+
+if(!usuarioLogado){
+    location.replace("login.html");
+}
+
+/* ==========================
+   TEMA
+========================== */
+
+const themeBtn = document.getElementById("themeBtn");
+
+if (localStorage.getItem("tema") === "dark") {
+    document.body.classList.add("dark");
+    themeBtn.textContent = "☀️";
+}
+
+themeBtn.addEventListener("click", () => {
+    document.body.classList.toggle("dark");
+
+    const dark = document.body.classList.contains("dark");
+
+    themeBtn.textContent = dark ? "☀️" : "🌙";
+
+    localStorage.setItem("tema", dark ? "dark" : "light");
+});
+
+/* ==========================
+   NOTIFICAÇÕES LOCAL
+========================== */
+
+function getNotificacoes(){
+    return JSON.parse(localStorage.getItem("notificacoes")) || [];
+}
+
+function setNotificacoes(data){
+    localStorage.setItem("notificacoes", JSON.stringify(data));
+}
+
+/* ==========================
+   RENDER
+========================== */
+
+const lista = document.getElementById("listaNotificacoes");
+const contador = document.getElementById("contador");
+
+function render(){
+
+    const dados = getNotificacoes();
+
+    contador.textContent = dados.length;
+
+    if(dados.length === 0){
+        lista.innerHTML = `
+            <div class="empty">
+                <div style="font-size:4rem;">🔔</div>
+                <h2>Nenhuma notificação</h2>
+                <p>Quando algo acontecer, aparecerá aqui.</p>
+            </div>
+        `;
+        return;
+    }
+
+    lista.innerHTML = dados.map(n => `
+        <div class="notificacao">
+            <h3>${n.titulo}</h3>
+            <p>${n.mensagem}</p>
+            <span>${n.data}</span>
+        </div>
+    `).join("");
+}
+
+render();
+
+/* ==========================
+   LIMPAR
+========================== */
+
+document.getElementById("limpar").addEventListener("click", () => {
+
+    if(!confirm("Limpar todas as notificações?")) return;
+
+    localStorage.removeItem("notificacoes");
+
+    render();
+
+});
+
+</script>
+
+</body>
+</html>
