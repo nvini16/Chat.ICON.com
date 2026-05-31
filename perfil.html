@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Perfil | Chat.ICON</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:"Segoe UI",sans-serif;
+}
+
+:root{
+    --bg:#f8fbff;
+    --card:#ffffff;
+    --text:#222;
+    --primary:#2196f3;
+    --border:#e5edf5;
+}
+
+.dark{
+    --bg:#0d1117;
+    --card:#161b22;
+    --text:#f5f5f5;
+    --border:#2d333b;
+}
+
+body{
+    background:var(--bg);
+    color:var(--text);
+    min-height:100vh;
+}
+
+header{
+    height:70px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 20px;
+    border-bottom:1px solid var(--border);
+}
+
+.logo strong{ color:var(--primary); }
+
+.theme{
+    width:40px;
+    height:40px;
+    border:none;
+    border-radius:50%;
+    cursor:pointer;
+    background:var(--card);
+    color:var(--text);
+}
+
+.container{
+    max-width:600px;
+    margin:auto;
+    padding:30px 20px;
+}
+
+.profile-card{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:24px;
+    padding:30px;
+}
+
+.avatar{
+    width:140px;
+    height:140px;
+    margin:auto;
+    border-radius:50%;
+    overflow:hidden;
+    border:4px solid var(--primary);
+}
+
+.avatar img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+}
+
+.info{
+    text-align:center;
+    margin-top:20px;
+}
+
+.username{ color:var(--primary); margin-top:6px; }
+
+.stats{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:15px;
+    margin-top:30px;
+}
+
+.stat{
+    background:var(--bg);
+    border:1px solid var(--border);
+    border-radius:16px;
+    padding:15px;
+    text-align:center;
+}
+
+.actions{
+    margin-top:25px;
+    display:flex;
+    gap:10px;
+}
+
+.btn{
+    flex:1;
+    padding:14px;
+    border:none;
+    border-radius:14px;
+    cursor:pointer;
+    font-weight:600;
+}
+
+.primary{ background:var(--primary); color:white; }
+.secondary{ background:transparent; border:1px solid var(--border); }
+
+.about{
+    margin-top:25px;
+    background:var(--bg);
+    border:1px solid var(--border);
+    border-radius:18px;
+    padding:20px;
+}
+
+.logout{
+    width:100%;
+    padding:14px;
+    margin-top:15px;
+    border:none;
+    border-radius:14px;
+    background:#ff3b30;
+    color:white;
+    font-weight:600;
+    cursor:pointer;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <div class="logo">Chat.<strong>ICON</strong></div>
+    <button class="theme" id="themeBtn">🌙</button>
+</header>
+
+<div class="container">
+
+    <div class="profile-card">
+
+        <div class="avatar">
+            <img id="fotoPerfil" src="https://picsum.photos/300">
+        </div>
+
+        <div class="info">
+            <h1 id="nome">Carregando...</h1>
+            <p class="username" id="usuario">@...</p>
+            <p id="bio">Sem bio</p>
+        </div>
+
+        <div class="actions">
+            <button class="btn primary" onclick="location.href='index.html'">
+                Início
+            </button>
+
+            <button class="btn secondary" onclick="location.href='editarperfil.html'">
+                Editar
+            </button>
+        </div>
+
+        <div class="about">
+            <h3>Sobre</h3>
+            <p id="sobre">Usuário do sistema Chat.ICON</p>
+        </div>
+
+    </div>
+
+    <button id="sairConta" class="logout">Sair da Conta</button>
+
+</div>
+
+<script>
+
+/* ==========================
+   API
+========================== */
+
+const API_URL = "https://script.google.com/macros/s/AKfycbyiHQTTttTzx8vJ3CKHm-Ro5LyWo5sFf8RlzHAvyGHCkxPDBnDCTDwGdjMbkph3DCkURA/exec";
+
+/* ==========================
+   PROTEÇÃO TOKEN
+========================== */
+
+const token = localStorage.getItem("token");
+
+if (!token) {
+    location.replace("login.html");
+}
+
+/* ==========================
+   TEMA
+========================== */
+
+const themeBtn = document.getElementById("themeBtn");
+
+if (localStorage.getItem("tema") === "dark") {
+    document.body.classList.add("dark");
+}
+
+themeBtn.addEventListener("click", () => {
+    document.body.classList.toggle("dark");
+
+    localStorage.setItem(
+        "tema",
+        document.body.classList.contains("dark") ? "dark" : "light"
+    );
+});
+
+/* ==========================
+   CARREGAR PERFIL DO BACKEND
+========================== */
+
+async function carregarPerfil() {
+
+    try {
+
+        const res = await fetch(API_URL, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                tipo: "perfil",
+                token
+            })
+        });
+
+        const data = await res.json();
+
+        if (data.status !== "OK") {
+            throw new Error("Token inválido");
+        }
+
+        document.getElementById("nome").textContent = data.nome;
+        document.getElementById("usuario").textContent = "@" + data.usuario;
+        document.getElementById("bio").textContent = data.bio || "Sem bio";
+
+        if (data.foto) {
+            document.getElementById("fotoPerfil").src = data.foto;
+        }
+
+    } catch (err) {
+        console.error(err);
+        location.replace("login.html");
+    }
+}
+
+carregarPerfil();
+
+/* ==========================
+   LOGOUT
+========================== */
+
+document.getElementById("sairConta").addEventListener("click", () => {
+
+    if (!confirm("Deseja sair da conta?")) return;
+
+    localStorage.removeItem("token");
+    localStorage.removeItem("usuarioLogado");
+
+    location.replace("login.html");
+});
+
+</script>
+
+</body>
+</html>
