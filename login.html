@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login | Chat.ICON</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:"Segoe UI",sans-serif;
+}
+
+:root{
+    --bg:#f8fbff;
+    --card:#fff;
+    --text:#222;
+    --primary:#2196f3;
+    --border:#e5edf5;
+    --danger:#ff3b30;
+}
+
+.dark{
+    --bg:#0d1117;
+    --card:#161b22;
+    --text:#f5f5f5;
+    --border:#2d333b;
+}
+
+body{
+    background:var(--bg);
+    color:var(--text);
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding:20px;
+}
+
+.card{
+    width:100%;
+    max-width:420px;
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:20px;
+    padding:30px;
+}
+
+.logo{
+    text-align:center;
+    font-size:2rem;
+    margin-bottom:20px;
+}
+
+.logo strong{ color:var(--primary); }
+
+input{
+    width:100%;
+    padding:12px;
+    margin-top:8px;
+    border-radius:12px;
+    border:1px solid var(--border);
+    background:transparent;
+    color:var(--text);
+}
+
+button{
+    width:100%;
+    padding:12px;
+    margin-top:15px;
+    border:none;
+    border-radius:12px;
+    font-weight:600;
+    cursor:pointer;
+}
+
+.login{
+    background:var(--primary);
+    color:#fff;
+}
+
+.theme{
+    background:transparent;
+    border:1px solid var(--border);
+    color:var(--text);
+}
+
+.erro{
+    margin-top:12px;
+    color:var(--danger);
+    text-align:center;
+    display:none;
+}
+
+.legenda{
+    font-size:13px;
+    color:#888;
+    text-align:center;
+    margin-top:12px;
+}
+.legenda a{
+    color:var(--primary);
+    text-decoration:none;
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+
+    <div class="logo">Chat.<strong>ICON</strong></div>
+
+    <input id="usuario" placeholder="Usuário">
+    <input id="senha" type="password" placeholder="Senha">
+
+    <button class="login" id="entrar">Entrar</button>
+
+    <div class="erro" id="erro"></div>
+
+    <p class="legenda">
+        Não possui conta? <a href="cadastro.html">Cadastre-se</a>
+    </p>
+
+</div>
+
+<script>
+
+/* ==========================
+   TEMA
+========================== */
+
+if(localStorage.getItem("tema") === "dark"){
+    document.body.classList.add("dark");
+}
+
+/* ==========================
+   USUÁRIOS SIMULADOS
+========================== */
+
+const usuariosFake = [
+    {
+        usuario: "admin",
+        senha: "123",
+        nome: "Administrador"
+    },
+    {
+        usuario: "user",
+        senha: "123",
+        nome: "Usuário Teste"
+    }
+];
+
+/* ==========================
+   LOGIN LOCAL
+========================== */
+
+const entrar = document.getElementById("entrar");
+const erro = document.getElementById("erro");
+
+entrar.addEventListener("click", () => {
+
+    const usuario = document.getElementById("usuario").value.trim();
+    const senha = document.getElementById("senha").value;
+
+    erro.style.display = "none";
+
+    if(!usuario || !senha){
+        erro.textContent = "Preencha todos os campos.";
+        erro.style.display = "block";
+        return;
+    }
+
+    const encontrado = usuariosFake.find(
+        u => u.usuario === usuario && u.senha === senha
+    );
+
+    if(!encontrado){
+        erro.textContent = "Usuário ou senha inválidos.";
+        erro.style.display = "block";
+        return;
+    }
+
+    // simula sessão
+    localStorage.setItem("logado", "true");
+
+    localStorage.setItem("usuarioLogado", JSON.stringify({
+        usuario: encontrado.usuario,
+        nome: encontrado.nome
+    }));
+
+    location.href = "index.html";
+});
+
+/* Enter login */
+document.addEventListener("keydown", (e) => {
+    if(e.key === "Enter") entrar.click();
+});
+
+</script>
+
+</body>
+</html>
