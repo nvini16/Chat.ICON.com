@@ -154,18 +154,13 @@ button{
 <script>
 
 /* ==========================
-   API
+   PROTEÇÃO
 ========================== */
 
-const API_URL = "https://script.google.com/macros/s/AKfycbyiHQTTttTzx8vJ3CKHm-Ro5LyWo5sFf8RlzHAvyGHCkxPDBnDCTDwGdjMbkph3DCkURA/exec";
+const usuarioLogado =
+JSON.parse(localStorage.getItem("usuarioLogado"));
 
-/* ==========================
-   PROTEÇÃO TOKEN
-========================== */
-
-const token = localStorage.getItem("token");
-
-if (!token) {
+if(!usuarioLogado){
     location.replace("login.html");
 }
 
@@ -173,69 +168,84 @@ if (!token) {
    TEMA
 ========================== */
 
-const themeBtn = document.getElementById("themeBtn");
+const themeBtn =
+document.getElementById("themeBtn");
 
-if (localStorage.getItem("tema") === "dark") {
+if(localStorage.getItem("tema") === "dark"){
     document.body.classList.add("dark");
 }
 
 themeBtn.addEventListener("click", () => {
+
     document.body.classList.toggle("dark");
 
     localStorage.setItem(
         "tema",
-        document.body.classList.contains("dark") ? "dark" : "light"
+        document.body.classList.contains("dark")
+        ? "dark"
+        : "light"
     );
+
 });
 
 /* ==========================
    ELEMENTOS
 ========================== */
 
-const nome = document.getElementById("nome");
-const usuario = document.getElementById("usuario");
-const bio = document.getElementById("bio");
-const foto = document.getElementById("foto");
-const preview = document.getElementById("preview");
-const toast = document.getElementById("toast");
+const nome =
+document.getElementById("nome");
+
+const usuario =
+document.getElementById("usuario");
+
+const bio =
+document.getElementById("bio");
+
+const foto =
+document.getElementById("foto");
+
+const preview =
+document.getElementById("preview");
+
+const toast =
+document.getElementById("toast");
 
 /* ==========================
-   CARREGAR PERFIL DO BACKEND
+   CARREGAR PERFIL
 ========================== */
 
-async function carregarPerfil() {
+const perfil =
+JSON.parse(
+    localStorage.getItem(
+        "perfil_" + usuarioLogado.usuario
+    )
+);
 
-    try {
+if(perfil){
 
-        const res = await fetch(API_URL, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                tipo: "perfil",
-                token
-            })
-        });
+    nome.value =
+    perfil.nome || "";
 
-        const data = await res.json();
+    usuario.value =
+    perfil.usuario || "";
 
-        if (data.status !== "OK") {
-            throw new Error("Token inválido");
-        }
+    bio.value =
+    perfil.bio || "";
 
-        nome.value = data.nome || "";
-        usuario.value = data.usuario || "";
-        bio.value = data.bio || "";
-        preview.src = data.foto || preview.src;
-
-    } catch (err) {
-        console.error(err);
-        location.replace("login.html");
+    if(perfil.foto){
+        preview.src =
+        perfil.foto;
     }
-}
 
-carregarPerfil();
+}else{
+
+    nome.value =
+    usuarioLogado.nome || "";
+
+    usuario.value =
+    usuarioLogado.usuario || "";
+
+}
 
 /* ==========================
    FOTO
@@ -244,78 +254,107 @@ carregarPerfil();
 foto.addEventListener("change", e => {
 
     const file = e.target.files[0];
-    if (!file) return;
 
-    const reader = new FileReader();
+    if(!file) return;
+
+    const reader =
+    new FileReader();
 
     reader.onload = ev => {
-        preview.src = ev.target.result;
+        preview.src =
+        ev.target.result;
     };
 
     reader.readAsDataURL(file);
+
 });
 
 /* ==========================
-   SALVAR PERFIL NO BACKEND
+   SALVAR PERFIL
 ========================== */
 
-document.getElementById("salvar").addEventListener("click", async () => {
+document.getElementById("salvar")
+.addEventListener("click", () => {
 
     const perfilAtualizado = {
-        token,
-        nome: nome.value.trim(),
-        usuario: usuario.value.trim(),
-        bio: bio.value.trim(),
-        foto: preview.src
+
+        nome:
+        nome.value.trim(),
+
+        usuario:
+        usuario.value.trim(),
+
+        bio:
+        bio.value.trim(),
+
+        foto:
+        preview.src
+
     };
 
-    try {
-
-        const res = await fetch(API_URL, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                tipo: "updatePerfil",
-                ...perfilAtualizado
-            })
-        });
-
-        const data = await res.json();
-
-        if (data.status !== "OK") {
-            throw new Error("Falha ao salvar");
-        }
-
-        // atualiza cache local também
-        localStorage.setItem("usuarioLogado", JSON.stringify({
-            usuario: perfilAtualizado.usuario,
-            nome: perfilAtualizado.nome
-        }));
-
-        toast.classList.add("show");
-
-        setTimeout(() => {
-            location.href = "perfil.html";
-        }, 800);
-
-    } catch (err) {
-        console.error(err);
-        alert("Erro ao salvar perfil no servidor.");
+    if(
+        !perfilAtualizado.nome ||
+        !perfilAtualizado.usuario
+    ){
+        alert("Preencha nome e usuário.");
+        return;
     }
+
+    localStorage.setItem(
+        "perfil_" +
+        perfilAtualizado.usuario,
+
+        JSON.stringify(
+            perfilAtualizado
+        )
+    );
+
+    localStorage.setItem(
+        "usuarioLogado",
+
+        JSON.stringify({
+            nome:
+            perfilAtualizado.nome,
+
+            usuario:
+            perfilAtualizado.usuario
+        })
+    );
+
+    toast.classList.add("show");
+
+    setTimeout(() => {
+
+        location.href =
+        "perfil.html";
+
+    }, 800);
+
 });
 
 /* ==========================
    CTRL + S
 ========================== */
 
-document.addEventListener("keydown", e => {
-    if (e.ctrlKey && e.key === "s") {
-        e.preventDefault();
-        document.getElementById("salvar").click();
+document.addEventListener(
+    "keydown",
+    e => {
+
+        if(
+            e.ctrlKey &&
+            e.key === "s"
+        ){
+
+            e.preventDefault();
+
+            document
+            .getElementById("salvar")
+            .click();
+
+        }
+
     }
-});
+);
 
 </script>
 
