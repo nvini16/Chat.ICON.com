@@ -137,24 +137,17 @@ if(localStorage.getItem("tema") === "dark"){
 }
 
 /* ==========================
-   USUÁRIOS SIMULADOS
+   USUÁRIOS LOCAIS
 ========================== */
 
-const usuariosFake = [
-    {
-        usuario: "admin",
-        senha: "123",
-        nome: "Administrador"
-    },
-    {
-        usuario: "user",
-        senha: "123",
-        nome: "Usuário Teste"
-    }
-];
+function pegarUsuarios(){
+    return JSON.parse(
+        localStorage.getItem("usuarios")
+    ) || [];
+}
 
 /* ==========================
-   LOGIN LOCAL
+   LOGIN
 ========================== */
 
 const entrar = document.getElementById("entrar");
@@ -162,44 +155,78 @@ const erro = document.getElementById("erro");
 
 entrar.addEventListener("click", () => {
 
-    const usuario = document.getElementById("usuario").value.trim();
-    const senha = document.getElementById("senha").value;
+    const usuario =
+    document.getElementById("usuario")
+    .value
+    .trim();
+
+    const senha =
+    document.getElementById("senha")
+    .value;
 
     erro.style.display = "none";
 
     if(!usuario || !senha){
-        erro.textContent = "Preencha todos os campos.";
-        erro.style.display = "block";
+
+        erro.textContent =
+        "Preencha todos os campos.";
+
+        erro.style.display =
+        "block";
+
         return;
     }
 
-    const encontrado = usuariosFake.find(
-        u => u.usuario === usuario && u.senha === senha
+    const usuarios =
+    pegarUsuarios();
+
+    const encontrado =
+    usuarios.find(u =>
+        u.usuario === usuario &&
+        u.senha === senha
     );
 
     if(!encontrado){
-        erro.textContent = "Usuário ou senha inválidos.";
-        erro.style.display = "block";
+
+        erro.textContent =
+        "Usuário ou senha inválidos.";
+
+        erro.style.display =
+        "block";
+
         return;
     }
 
-    // simula sessão
-    localStorage.setItem("logado", "true");
+    localStorage.setItem(
+        "logado",
+        "true"
+    );
 
-    localStorage.setItem("usuarioLogado", JSON.stringify({
-        usuario: encontrado.usuario,
-        nome: encontrado.nome
-    }));
+    localStorage.setItem(
+        "usuarioLogado",
+        JSON.stringify(encontrado)
+    );
 
-    location.href = "index.html";
+    location.href =
+    "index.html";
+
 });
 
-/* Enter login */
-document.addEventListener("keydown", (e) => {
-    if(e.key === "Enter") entrar.click();
-});
+/* ==========================
+   ENTER
+========================== */
+
+document.addEventListener(
+    "keydown",
+    e => {
+
+        if(e.key === "Enter"){
+            entrar.click();
+        }
+
+    }
+);
 
 </script>
-
 </body>
 </html>
